@@ -63,6 +63,25 @@ shinyServer(function(input, output) {
   }
   # </--- get model data --->
   
+  # </--- download model data --->
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste0("downloadedData-", Sys.Date(), ".zip")
+    },
+    content = function(file){
+      if(is.null(models)) return(NULL)
+      tempdir <- file.path(tempdir(), "savefiles")
+      dir.create(tempdir, showWarnings = FALSE)
+      for(nm in names(models)){
+        vardat <- predict_metab(models[[nm]])
+        write.csv(x = vardat, file = paste0(tempdir, "/", nm, ".csv"), row.names = FALSE)
+      }
+      zip(zipfile = file, files = tempdir, extras="-j")
+      unlink(file.path(tempdir(),"savefiles"), recursive=T)
+    }
+  )
+  # </--- download model data --->
+  
   # <--- table helpers --->
   buildDT <- function() {
     message("building models table")
